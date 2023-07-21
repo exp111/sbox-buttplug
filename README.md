@@ -1,3 +1,5 @@
+The library I forked doesn't work with the newest buttplug.io spec, so this repo will be archived. I could also delete it but who knows.
+
 # sbox-buttplug
 This is a managed Buttplug.io fork (https://github.com/Er1807/ManagedButtplugIo, chosen because it had the least amount of files lmao) that contains changes to run in the s&box sandbox.
 Specifically I had to remove the dependency on WebSocketSharp and Newtonsoft.Json, use s&box GameTasks for Threads and remove the need for reflection.
