@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Runtime.InteropServices;
 
-namespace ButtplugManaged
+namespace Sandbox.Buttplug
 {
     public class ButtplugClient
     {
@@ -80,8 +78,19 @@ namespace ButtplugManaged
         /// Event fired when a server disconnect has occured.
         /// </summary>
         public event EventHandler ServerDisconnect;
+        public class ButtplugServerDisconnectEventArgs : EventArgs
+        {
+            public int Status { get; }
+            public string Reason { get; }
 
-        public void OnServerDisconnect(object sender, EventArgs args)
+            public ButtplugServerDisconnectEventArgs(int status, string reason)
+            {
+                Status = status;
+                Reason = reason;
+            }
+        }
+
+        public void OnServerDisconnect(object sender, ButtplugServerDisconnectEventArgs args)
         {
             Connected = false;
             _devices.Clear();
@@ -90,19 +99,10 @@ namespace ButtplugManaged
 
         public bool IsScanning { get; private set; }
 
-
-        
-
         public ButtplugClient(string aClientName)
         {
             Name = aClientName;
             _devices = new ConcurrentDictionary<uint, ButtplugClientDevice>();
-        }
-
-
-        public async Task ConnectAsync(ButtplugEmbeddedConnectorOptions aConnector)
-        {
-            throw new NotImplementedException("This feature doesnt exist in the managed Client");
         }
 
         public async Task ConnectAsync(ButtplugWebsocketConnectorOptions aConnector)

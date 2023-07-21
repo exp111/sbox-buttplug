@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ButtplugManaged
+namespace Sandbox.Buttplug
 {
     public class ButtplugConnectorException : ButtplugException
     {

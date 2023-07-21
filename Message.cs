@@ -1,12 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace ButtplugManaged
+namespace Sandbox.Buttplug
 {
-
-
     public class Message
     {
 
@@ -56,8 +51,55 @@ namespace ButtplugManaged
                 message.RSSILevelCmd = RSSILevelCmd;
 
             return message;
-
         }
+
+        //TODO: can we make this better? it currently uses this Message class to send/receive cmds and then parses them into/from the singular classes
+        public MessageBase To()
+        {
+            if (Ping != null)
+                return Ping;
+
+            if (RequestServerInfo != null)
+                return RequestServerInfo;
+            if (ServerInfo != null)
+                return ServerInfo;
+
+
+            if (StartScanning != null)
+                return StartScanning;
+            if (StopScanning != null)
+                return StopScanning;
+            if (RequestDeviceList != null)
+                return RequestDeviceList;
+
+            if (RawWriteCmd != null)
+                return RawWriteCmd;
+            if (RawReadCmd != null)
+                return RawReadCmd;
+            if (RawSubscribeCmd != null)
+                return RawSubscribeCmd;
+            if (RawUnsubscribeCmd != null)
+                return RawUnsubscribeCmd;
+
+            if (StopDeviceCmd != null)
+                return StopDeviceCmd;
+            if (StopAllDevices != null)
+                return StopAllDevices;
+            if (VibrateCmd != null)
+                return VibrateCmd;
+            if (LinearCmd != null)
+                return LinearCmd;
+            if (RotateCmd != null)
+                return RotateCmd;
+
+            if (BatteryLevelCmd != null)
+                return BatteryLevelCmd;
+            if (RSSILevelCmd != null)
+                return RSSILevelCmd;
+
+            return null;
+        }
+
         //Status
         public Ok Ok { get; set; }
         public Error Error { get; set; }
@@ -171,7 +213,7 @@ namespace ButtplugManaged
         public string DeviceName { get; set; }
         public Dictionary<string, DeviceMessagesDetails> DeviceMessages { get; set; }
 
-        
+
     }
 
     public class DeviceMessages

@@ -4,17 +4,15 @@
 // Licensed under the BSD 3-Clause license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using WebSocketSharp;
 
-namespace ButtplugManaged
+namespace Sandbox.Buttplug
 {
     public class ButtplugMessageManager
     {
@@ -29,6 +27,7 @@ namespace ButtplugManaged
         private int _counter;
         private readonly WebSocket _webSocket;
         private uint _pingTimeout;
+        private string _webSocketUri;
 
         /// <summary>
         /// Gets the next available message ID. In most cases, setting the message ID is done automatically.
@@ -39,23 +38,22 @@ namespace ButtplugManaged
 
         public ButtplugMessageManager(ButtplugWebsocketConnectorOptions connectorOptions, ButtplugClient client)
         {
-            _webSocket = new WebSocket(connectorOptions.NetworkAddress.AbsoluteUri);
+            _webSocketUri = connectorOptions.NetworkAddress.AbsoluteUri;
+            _webSocket = new();
             _client = client;
-            _webSocket.OnMessage += RecieveMessage;
-            _webSocket.OnClose += (sender, args) =>_client.OnServerDisconnect(sender, args);
-            _webSocket.OnError += (sender, args) =>_client.OnServerDisconnect(sender, args);
+            _webSocket.OnMessageReceived += RecieveMessage;
+            _webSocket.OnDisconnected += (status, reason) => _client.OnServerDisconnect(this, new(status, reason));
         }
 
         public async Task Connect()
         {
-            _webSocket.Connect();
+            await _webSocket.Connect(_webSocketUri);
             var result = await SendClientMessage(new RequestServerInfo() { ClientName = _client.Name, MessageVersion = 2 });
 
             if (result is ServerInfo serverInfo)
             {
-                Console.WriteLine(serverInfo.MaxPingTime);
                 _pingTimeout = serverInfo.MaxPingTime;
-                new Thread(Pings).Start();
+                await GameTask.RunInThreadAsync(Pings);
 
 
                 var result2 = await SendClientMessage(new RequestDeviceList() { });
@@ -76,36 +74,28 @@ namespace ButtplugManaged
         {
             bool wspings = _pingTimeout == 0;
             if (wspings) _pingTimeout = 1000 * 10 * 2;
-            while (_webSocket.ReadyState == WebSocketState.Open)
+            while (_webSocket.IsConnected)
             {
                 if (wspings)
-                    _webSocket.Ping();
+                    _webSocket.Send(new byte[] { 0x9 }); //Ping
                 else
                     SendClientMessage(new Ping());
-                Thread.Sleep((int)_pingTimeout / 2);
+                GameTask.Delay((int)_pingTimeout / 2);
             }
         }
 
         public void Disconnect()
         {
-
-            _webSocket.Close();
+            _webSocket.Dispose();
         }
 
 
-        private void RecieveMessage(object sender, MessageEventArgs e)
+        private void RecieveMessage(string message)
         {
-            if (!e.IsText)
-                return;
-
-            List<Message> messages = JsonConvert.DeserializeObject<List<Message>>(e.Data);
-            foreach (var message in messages)
+            List<Message> messages = JsonSerializer.Deserialize<List<Message>>(message);
+            foreach (var msg in messages)
             {
-                foreach (var item in typeof(Message).GetProperties())
-                {
-                    if (item.GetValue(message) is MessageBase messageBase)
-                        CheckMessage(messageBase);
-                }
+                CheckMessage(msg.To());
             }
         }
 
@@ -117,7 +107,7 @@ namespace ButtplugManaged
                 task.TrySetException(new ButtplugConnectorException("Sorter has been destroyed with live tasks still in queue, most likely due to a disconnection."));
             }
 
-            _webSocket.Close();
+            _webSocket.Dispose();
         }
 
         public Task<MessageBase> SendClientMessage(MessageBase aMsg)
@@ -128,9 +118,10 @@ namespace ButtplugManaged
 
             var promise = new TaskCompletionSource<MessageBase>();
             _waitingMsgs.TryAdd(id, promise);
-            string jsonString = JsonConvert.SerializeObject(new List<Message>() { Message.From(aMsg) }, Formatting.Indented, new JsonSerializerSettings
+            string jsonString = JsonSerializer.Serialize<List<Message>>(new List<Message>() { Message.From(aMsg) }, options: new()
             {
-                NullValueHandling = NullValueHandling.Ignore
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = true,
             });
             _webSocket.Send(jsonString);
 

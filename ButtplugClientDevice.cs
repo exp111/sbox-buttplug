@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ButtplugManaged
+namespace Sandbox.Buttplug
 {
     public class ButtplugClientDevice
     {
@@ -181,7 +180,9 @@ namespace ButtplugManaged
         public async Task<byte[]> SendRawReadCmd(string aEndpoint, uint aExpectedLength, uint aTimeout)
         {
             var task = _manager.SendClientMessage(new RawReadCmd() { DeviceIndex = Index, Endpoint = aEndpoint, ExpectedLength = aExpectedLength });
-            if (await Task.WhenAny(task, Task.Delay((int)aTimeout)) == task)
+            
+            //if (await Task.WhenAny(task, Task.Delay((int)aTimeout)) == task)
+            if (GameTask.WhenAny(task, GameTask.Delay((int)aTimeout)) == task)
             {
                 var result = await task;
 
