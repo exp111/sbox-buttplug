@@ -56,6 +56,9 @@ namespace Sandbox.Buttplug
         //TODO: can we make this better? it currently uses this Message class to send/receive cmds and then parses them into/from the singular classes
         public MessageBase To()
         {
+            if (Error != null)
+                return Error;
+
             if (Ping != null)
                 return Ping;
 

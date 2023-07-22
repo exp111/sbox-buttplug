@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -76,6 +77,7 @@ namespace Sandbox.Buttplug
             if (wspings) _pingTimeout = 1000 * 10 * 2;
             while (_webSocket.IsConnected)
             {
+                //TODO: would need to send a ping but that is afaik currently not possible with the websocket
                 if (wspings)
                     _webSocket.Send(new byte[] { 0x9 }); //Ping
                 else
@@ -118,9 +120,9 @@ namespace Sandbox.Buttplug
 
             var promise = new TaskCompletionSource<MessageBase>();
             _waitingMsgs.TryAdd(id, promise);
-            string jsonString = JsonSerializer.Serialize<List<Message>>(new List<Message>() { Message.From(aMsg) }, options: new()
+            string jsonString = JsonSerializer.Serialize(new List<Message>() { Message.From(aMsg) }, options: new()
             {
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 WriteIndented = true,
             });
             _webSocket.Send(jsonString);
