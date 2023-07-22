@@ -54,11 +54,10 @@ namespace Sandbox.Buttplug
             if (result is ServerInfo serverInfo)
             {
                 _pingTimeout = serverInfo.MaxPingTime;
-                await GameTask.RunInThreadAsync(Pings);
-
+                //TODO: as we cant manually send pings we need to rely on the default keep alive interval which is 30 seconds
+                //await GameTask.RunInThreadAsync(Pings);
 
                 var result2 = await SendClientMessage(new RequestDeviceList() { });
-
                 if (result2 is DeviceList list)
                 {
                     foreach (var device in list.Devices)

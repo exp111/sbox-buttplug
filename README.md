@@ -11,6 +11,8 @@ var connector = new ButtplugWebsocketConnectorOptions( new( "ws://localhost:8080
 var task = client.ConnectAsync( connector );
 // Get your devices and do something
 ```
+You may need to scan for devices with `client.StartScanningAsync()`.
+The devices can then be accessed from `client.Devices`.
 
 # Known Issues
 - You can not connect to localhost on other ports than 80, 443, 8080 or 8443. That means you probably have to change your Intiface Central Server Port.

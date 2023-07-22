@@ -56,9 +56,10 @@ namespace Sandbox.Buttplug
         //TODO: can we make this better? it currently uses this Message class to send/receive cmds and then parses them into/from the singular classes
         public MessageBase To()
         {
+            if (Ok != null)
+                return Ok;
             if (Error != null)
                 return Error;
-
             if (Ping != null)
                 return Ping;
 
@@ -72,13 +73,23 @@ namespace Sandbox.Buttplug
                 return StartScanning;
             if (StopScanning != null)
                 return StopScanning;
+            if (ScanningFinished != null)
+                return ScanningFinished;
             if (RequestDeviceList != null)
                 return RequestDeviceList;
+            if (DeviceList != null)
+                return DeviceList;
+            if (DeviceAdded != null)
+                return DeviceAdded;
+            if (DeviceRemoved != null)
+                return DeviceRemoved;
 
             if (RawWriteCmd != null)
                 return RawWriteCmd;
             if (RawReadCmd != null)
                 return RawReadCmd;
+            if (RawReading != null)
+                return RawReading;
             if (RawSubscribeCmd != null)
                 return RawSubscribeCmd;
             if (RawUnsubscribeCmd != null)
@@ -97,8 +108,12 @@ namespace Sandbox.Buttplug
 
             if (BatteryLevelCmd != null)
                 return BatteryLevelCmd;
+            if (BatteryLevelReading != null)
+                return BatteryLevelReading;
             if (RSSILevelCmd != null)
                 return RSSILevelCmd;
+            if (RSSILevelReading != null)
+                return RSSILevelReading;
 
             return null;
         }
