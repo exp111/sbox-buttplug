@@ -111,13 +111,21 @@ namespace Sandbox.Buttplug
             await _messageManager.Connect();
 
             Connected = true;
+        }
 
+        public async Task ConnectAsync(Uri url)
+        {
+            await ConnectAsync(new ButtplugWebsocketConnectorOptions(url));
+        }
+
+        public async Task ConnectAsync(string url)
+        {
+            await ConnectAsync(new Uri(url));
         }
 
         public async Task DisconnectAsync()
         {
             _messageManager.Disconnect();
-
 
             _devices.Clear();
             Connected = false;
